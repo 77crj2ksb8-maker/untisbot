@@ -1,0 +1,12 @@
+# --- Schritt 1: Telegram ---
+# Bewusst schlank: für einen reinen Sende-Bot reicht requests vollkommen aus.
+# python-telegram-bot wird erst nötig, wenn der Bot auf Befehle (/heute, /morgen)
+# reagieren soll -- siehe Ausbaustufe 2 im Fahrplan.
+requests>=2.32,<3
+python-dotenv>=1.0,<2
+
+# --- Schritt 2: WebUntis ---
+webuntis>=0.1.24
+
+# --- Entwicklung ---
+pytest>=8.0
