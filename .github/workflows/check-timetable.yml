@@ -1,0 +1,111 @@
+name: Stundenplan pruefen
+
+# Schulzeiten Mo-Fr 6:00-18:00 (Europe/Berlin), alle 5 Minuten.
+#
+# GitHub-Cron kennt keine Zeitzonen -- nur UTC. Das Fenster hier (4-17 UTC)
+# ist bewusst 1 Stunde grosszuegiger als noetig, damit sowohl Winterzeit
+# (UTC+1) als auch Sommerzeit (UTC+2) sauber 6:00-18:00 lokal abdecken,
+# ohne dass zweimal im Jahr eine Stunde fehlt.
+#
+# Ein paar zusaetzliche Laeufe am Rand kosten nichts -- dieses Repo ist
+# oeffentlich und hat unbegrenzte Gratis-Minuten fuer Actions.
+on:
+  schedule:
+    - cron: "*/5 4-17 * * 1-5"
+  workflow_dispatch: {}  # manueller "Run workflow"-Knopf zum Testen
+
+permissions:
+  contents: write  # noetig, um state.json zurueck ins Repo zu committen
+
+concurrency:
+  group: untisbot-check
+  cancel-in-progress: false  # nie einen laufenden Check abbrechen, sonst geht der State-Save verloren
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5  # ein haengender Lauf darf nicht den naechsten blockieren
+
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Abhaengigkeiten installieren
+        run: pip install -r requirements.txt
+
+      - name: Stundenplan pruefen und ggf. melden
+        id: run
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WEBUNTIS_SERVER: ${{ secrets.WEBUNTIS_SERVER }}
+          WEBUNTIS_SCHOOL: ${{ secrets.WEBUNTIS_SCHOOL }}
+          WEBUNTIS_USERNAME: ${{ secrets.WEBUNTIS_USERNAME }}
+          WEBUNTIS_PASSWORD: ${{ secrets.WEBUNTIS_PASSWORD }}
+          WEBUNTIS_KLASSE: ${{ secrets.WEBUNTIS_KLASSE }}
+          LOOKAHEAD_DAYS: "7"
+          TIMEZONE: "Europe/Berlin"
+          LOG_LEVEL: "INFO"
+        run: |
+          set +e
+          python -m untisbot.main
+          code=$?
+          set -e
+
+          # Exit-Code 3 = "kein Schuljahr aktiv" (z. B. Sommerferien).
+          # Das ist ein normaler Zustand, kein Fehler -- der Lauf soll
+          # nicht rot werden und keine Fehler-Mail ausloesen.
+          if [ "$code" -eq 3 ]; then
+            echo "Kein aktives Schuljahr (Ferien) -- kein Fehler."
+            exit 0
+          fi
+          exit "$code"
+
+      # Laeuft auch, wenn der Schritt oben fehlgeschlagen ist -- ein Teil-
+      # erfolg (z. B. Nachricht gesendet, aber danach ein Folgefehler) soll
+      # nicht verloren gehen.
+      - name: Zustand zurueck ins Repo committen
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # state.json existiert in den Ferien noch nicht (kein aktives
+          # Schuljahr -> main.py speichert nichts). Das ist normal, kein Fehler.
+          if [ ! -f state.json ]; then
+            echo "Noch kein state.json vorhanden -- nichts zu committen."
+            exit 0
+          fi
+
+          # -f (force), weil state.json bewusst in .gitignore steht --
+          # das schuetzt vor versehentlichem Commit bei lokaler Entwicklung,
+          # hier in der Cloud ist das Committen aber genau der Sinn der Sache.
+          git add -f state.json
+          if git diff --staged --quiet; then
+            echo "Kein neuer Zustand -- nichts zu committen."
+            exit 0
+          fi
+
+          git commit -m "state: Stundenplan-Zustand aktualisiert [skip ci]"
+
+          # Kurzer Sicherheitsnetz gegen den seltenen Fall, dass zwei Laeufe
+          # sich ueberholen (concurrency-Gruppe verhindert das eigentlich
+          # schon, aber doppelt haelt besser): einmal neu einlesen und erneut
+          # versuchen, bevor der Job als fehlgeschlagen gilt.
+          if ! git push; then
+            git pull --rebase --autostash
+            git push
+          fi
+
+# Hinweis: GitHub deaktiviert geplante Workflows automatisch, wenn 60 Tage
+# lang kein Commit im Repo passiert -- z. B. ueber die Sommerferien, wenn
+# WebUntis ohnehin nichts liefert und daher auch kein state.json-Commit
+# entsteht. Nach den Ferien im Actions-Tab kurz nachsehen und den Workflow
+# bei Bedarf wieder aktivieren ("Enable workflow").
