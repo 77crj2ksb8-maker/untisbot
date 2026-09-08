@@ -1,0 +1,5 @@
+{
+  "name": "connect-apps-plugin",
+  "description": "Connect the external apps untisbot needs (Telegram + WebUntis) and wire up local .env and GitHub Actions secrets.",
+  "version": "0.1.0"
+}

@@ -1,0 +1,11 @@
+# Zugangsdaten -- niemals committen.
+.env
+
+# Wird vom Workflow gezielt mit "git add -f" wieder eingecheckt -- lokal
+# soll ein Test-Lauf aber keinen Diff im Arbeitsverzeichnis hinterlassen.
+state.json
+
+__pycache__/
+*.pyc
+.venv/
+venv/
