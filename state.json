@@ -1,0 +1,285 @@
+{
+ "schema": 1,
+ "gespeichert_am": "2026-09-09T13:07:35",
+ "fenster": {
+  "von": "2026-09-09",
+  "bis": "2026-09-16"
+ },
+ "periods": [
+  {
+   "id": 801821,
+   "lsnumber": 9900,
+   "key": "2026-09-14|09:20|E",
+   "datum": "2026-09-14",
+   "start": "09:20",
+   "ende": "10:05",
+   "fach": [
+    "E"
+   ],
+   "lehrer": [],
+   "raum": [
+    "H1.01"
+   ],
+   "klasse": [],
+   "gruppe": "",
+   "art": "Unterricht",
+   "titel": "E",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 801824,
+   "lsnumber": 9900,
+   "key": "2026-09-14|10:25|E",
+   "datum": "2026-09-14",
+   "start": "10:25",
+   "ende": "11:10",
+   "fach": [
+    "E"
+   ],
+   "lehrer": [],
+   "raum": [
+    "H1.01"
+   ],
+   "klasse": [],
+   "gruppe": "",
+   "art": "Unterricht",
+   "titel": "E",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 826807,
+   "lsnumber": 109900,
+   "key": "2026-09-14|11:15|VBRW(E)",
+   "datum": "2026-09-14",
+   "start": "11:15",
+   "ende": "12:00",
+   "fach": [
+    "VBRW(E)"
+   ],
+   "lehrer": [],
+   "raum": [
+    "H1.01"
+   ],
+   "klasse": [],
+   "gruppe": "VBRW(E)_3WGI13_1_Da",
+   "art": "Unterricht",
+   "titel": "VBRW(E)",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 826810,
+   "lsnumber": 109900,
+   "key": "2026-09-14|12:05|VBRW(E)",
+   "datum": "2026-09-14",
+   "start": "12:05",
+   "ende": "12:50",
+   "fach": [
+    "VBRW(E)"
+   ],
+   "lehrer": [],
+   "raum": [
+    "H1.01"
+   ],
+   "klasse": [],
+   "gruppe": "VBRW(E)_3WGI13_1_Da",
+   "art": "Unterricht",
+   "titel": "VBRW(E)",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 833980,
+   "lsnumber": 108300,
+   "key": "2026-09-15|09:20|DV1",
+   "datum": "2026-09-15",
+   "start": "09:20",
+   "ende": "10:05",
+   "fach": [
+    "DV1"
+   ],
+   "lehrer": [],
+   "raum": [
+    "DV1_2.02"
+   ],
+   "klasse": [],
+   "gruppe": "DV1_3WGI13_1_Ab",
+   "art": "Unterricht",
+   "titel": "DV1",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 834676,
+   "lsnumber": 108400,
+   "key": "2026-09-15|09:20|DV2",
+   "datum": "2026-09-15",
+   "start": "09:20",
+   "ende": "10:05",
+   "fach": [
+    "DV2"
+   ],
+   "lehrer": [],
+   "raum": [
+    "DV2_2.03"
+   ],
+   "klasse": [],
+   "gruppe": "DV2_3WGI13_1_Wa",
+   "art": "Unterricht",
+   "titel": "DV2",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 833983,
+   "lsnumber": 108300,
+   "key": "2026-09-15|10:25|DV1",
+   "datum": "2026-09-15",
+   "start": "10:25",
+   "ende": "11:10",
+   "fach": [
+    "DV1"
+   ],
+   "lehrer": [],
+   "raum": [
+    "DV1_2.02"
+   ],
+   "klasse": [],
+   "gruppe": "DV1_3WGI13_1_Ab",
+   "art": "Unterricht",
+   "titel": "DV1",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 834679,
+   "lsnumber": 108400,
+   "key": "2026-09-15|10:25|DV2",
+   "datum": "2026-09-15",
+   "start": "10:25",
+   "ende": "11:10",
+   "fach": [
+    "DV2"
+   ],
+   "lehrer": [],
+   "raum": [
+    "DV2_2.03"
+   ],
+   "klasse": [],
+   "gruppe": "DV2_3WGI13_1_Wa",
+   "art": "Unterricht",
+   "titel": "DV2",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 826813,
+   "lsnumber": 109900,
+   "key": "2026-09-15|11:15|VBRW(E)",
+   "datum": "2026-09-15",
+   "start": "11:15",
+   "ende": "12:00",
+   "fach": [
+    "VBRW(E)"
+   ],
+   "lehrer": [],
+   "raum": [
+    "H1.01"
+   ],
+   "klasse": [],
+   "gruppe": "VBRW(E)_3WGI13_1_Da",
+   "art": "Unterricht",
+   "titel": "VBRW(E)",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 826816,
+   "lsnumber": 109900,
+   "key": "2026-09-15|12:05|VBRW(E)",
+   "datum": "2026-09-15",
+   "start": "12:05",
+   "ende": "12:50",
+   "fach": [
+    "VBRW(E)"
+   ],
+   "lehrer": [],
+   "raum": [
+    "H1.01"
+   ],
+   "klasse": [],
+   "gruppe": "VBRW(E)_3WGI13_1_Da",
+   "art": "Unterricht",
+   "titel": "VBRW(E)",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  },
+  {
+   "id": 817207,
+   "lsnumber": 108900,
+   "key": "2026-09-16|10:25|PH",
+   "datum": "2026-09-16",
+   "start": "10:25",
+   "ende": "11:10",
+   "fach": [
+    "PH"
+   ],
+   "lehrer": [],
+   "raum": [
+    "Ph_0.03"
+   ],
+   "klasse": [],
+   "gruppe": "PH_3WGI13_13WGW13_2_Za",
+   "art": "Unterricht",
+   "titel": "PH",
+   "status": "regular",
+   "orig_lehrer": [],
+   "orig_raum": [],
+   "orig_fach": [],
+   "info": "",
+   "text": ""
+  }
+ ]
+}
