@@ -1,47 +1,63 @@
 name: Stundenplan pruefen
 
-# Schulzeiten Mo-Fr 6:00-18:00 (Europe/Berlin), alle 5 Minuten.
+# Warum diese Konstruktion?
 #
-# GitHub-Cron kennt keine Zeitzonen -- nur UTC. Das Fenster hier (4-17 UTC)
-# ist bewusst 1 Stunde grosszuegiger als noetig, damit sowohl Winterzeit
-# (UTC+1) als auch Sommerzeit (UTC+2) sauber 6:00-18:00 lokal abdecken,
-# ohne dass zweimal im Jahr eine Stunde fehlt.
+# GitHubs Zeitplaner haelt kurze Intervalle nicht ein. Ein "alle 5 Minuten"
+# wird verzoegert, gebuendelt oder ganz verworfen -- in der Praxis kamen nur
+# eine Handvoll Laeufe pro Tag zustande. Fuer "erste Stunde faellt aus" ist
+# das nutzlos.
 #
-# Ein paar zusaetzliche Laeufe am Rand kosten nichts -- dieses Repo ist
-# oeffentlich und hat unbegrenzte Gratis-Minuten fuer Actions.
+# Deshalb taktet der Bot selbst: Ein gestarteter Lauf prueft 55 Minuten lang
+# alle 5 Minuten. Der Zeitplaner muss nur noch UEBERHAUPT einen Lauf starten,
+# nicht 288 puenktliche pro Tag.
+#
+# Der Trigger steht auf halbstuendlich, obwohl ein Lauf 55 Minuten dauert.
+# Das ist Absicht: Faellt ein Start aus, springt der naechste ein. Die
+# concurrency-Gruppe verhindert Parallellaeufe -- ein wartender Lauf startet
+# nahtlos, sobald der vorige endet.
+#
+# Ein Durchlauf dauert rund drei Sekunden, das Repo ist oeffentlich und hat
+# damit unbegrenzte Actions-Minuten. Es kostet also nichts.
+
 on:
   schedule:
-    - cron: "*/5 4-17 * * 1-5"
-  workflow_dispatch: {}  # manueller "Run workflow"-Knopf zum Testen
+    # Alle 30 Minuten, 4-17 UTC, Mo-Fr.
+    # UTC, weil GitHub keine Zeitzonen kennt -- das deckt 6:00-19:00 Ortszeit
+    # ab, in Winter- wie Sommerzeit.
+    - cron: "0,30 4-17 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      minuten:
+        description: "Wie lange dieser Lauf ueberwachen soll"
+        required: false
+        default: "10"
 
 permissions:
-  contents: write  # noetig, um state.json zurueck ins Repo zu committen
+  contents: write        # noetig, um state.json zurueckzuschreiben
 
 concurrency:
-  group: untisbot-check
-  cancel-in-progress: false  # nie einen laufenden Check abbrechen, sonst geht der State-Save verloren
+  group: untisbot
+  # Niemals abbrechen: Ein laufender Check darf nicht mitten im Versand
+  # gekappt werden.
+  cancel-in-progress: false
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5  # ein haengender Lauf darf nicht den naechsten blockieren
+    timeout-minutes: 70
 
     steps:
-      - name: Code auschecken
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Python einrichten
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
+          cache: pip
           cache-dependency-path: requirements.txt
 
-      - name: Abhaengigkeiten installieren
-        run: pip install -r requirements.txt
+      - run: pip install -r requirements.txt
 
-      - name: Stundenplan pruefen und ggf. melden
-        id: run
+      - name: Ueberwachen
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -52,60 +68,11 @@ jobs:
           WEBUNTIS_KLASSE: ${{ secrets.WEBUNTIS_KLASSE }}
           LOOKAHEAD_DAYS: "7"
           TIMEZONE: "Europe/Berlin"
-          LOG_LEVEL: "INFO"
         run: |
-          set +e
-          python -m untisbot.main
-          code=$?
-          set -e
-
-          # Exit-Code 3 = "kein Schuljahr aktiv" (z. B. Sommerferien).
-          # Das ist ein normaler Zustand, kein Fehler -- der Lauf soll
-          # nicht rot werden und keine Fehler-Mail ausloesen.
-          if [ "$code" -eq 3 ]; then
-            echo "Kein aktives Schuljahr (Ferien) -- kein Fehler."
-            exit 0
-          fi
-          exit "$code"
-
-      # Laeuft auch, wenn der Schritt oben fehlgeschlagen ist -- ein Teil-
-      # erfolg (z. B. Nachricht gesendet, aber danach ein Folgefehler) soll
-      # nicht verloren gehen.
-      - name: Zustand zurueck ins Repo committen
-        if: always()
-        run: |
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          python bot.py watch --minutes "${{ github.event.inputs.minuten || '55' }}"
 
-          # state.json existiert in den Ferien noch nicht (kein aktives
-          # Schuljahr -> main.py speichert nichts). Das ist normal, kein Fehler.
-          if [ ! -f state.json ]; then
-            echo "Noch kein state.json vorhanden -- nichts zu committen."
-            exit 0
-          fi
-
-          # -f (force), weil state.json bewusst in .gitignore steht --
-          # das schuetzt vor versehentlichem Commit bei lokaler Entwicklung,
-          # hier in der Cloud ist das Committen aber genau der Sinn der Sache.
-          git add -f state.json
-          if git diff --staged --quiet; then
-            echo "Kein neuer Zustand -- nichts zu committen."
-            exit 0
-          fi
-
-          git commit -m "state: Stundenplan-Zustand aktualisiert [skip ci]"
-
-          # Kurzer Sicherheitsnetz gegen den seltenen Fall, dass zwei Laeufe
-          # sich ueberholen (concurrency-Gruppe verhindert das eigentlich
-          # schon, aber doppelt haelt besser): einmal neu einlesen und erneut
-          # versuchen, bevor der Job als fehlgeschlagen gilt.
-          if ! git push; then
-            git pull --rebase --autostash
-            git push
-          fi
-
-# Hinweis: GitHub deaktiviert geplante Workflows automatisch, wenn 60 Tage
-# lang kein Commit im Repo passiert -- z. B. ueber die Sommerferien, wenn
-# WebUntis ohnehin nichts liefert und daher auch kein state.json-Commit
-# entsteht. Nach den Ferien im Actions-Tab kurz nachsehen und den Workflow
-# bei Bedarf wieder aktivieren ("Enable workflow").
+# Hinweis: GitHub schaltet geplante Workflows ab, wenn 60 Tage lang kein
+# Commit im Repo passiert -- etwa ueber die Sommerferien. Danach einmal im
+# Actions-Tab "Enable workflow" klicken.
